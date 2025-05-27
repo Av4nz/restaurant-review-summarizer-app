@@ -3,37 +3,48 @@ import Button from "../components/Button";
 import LoadingModal from "../components/LoadingModal";
 import { useNavigate } from "react-router-dom";
 import api from "../api.js";
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 
 const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [url, setUrl] = useState("")
+  const [alert, setAlert] = useState({show: false, type: "success", message: ""});
   const navigate = useNavigate();
 
   async function scrapeAndAnalayze(url) {
     setIsModalOpen(true);
+    setAlert({ show: false, type: "success", message: "" });
     try {
       const response = await api.post("/scrape", { url });
       if (response.data.status === "success") {
-        alert("Scraping and Analysis successful")
+        setAlert({ show: true, type: "success", message: "Scraping and Analysis successful" });
+        localStorage.setItem("canAccessSummary", "true");
         setIsModalOpen(false);
-        navigate("/summary");
+        setTimeout(() => {
+          setAlert({ show: false, type: "success", message: "" });
+          navigate("/summary");
+        }, 1000);
       } else {
-        alert("Scraping and analysis failed: " + response.data.message);
+        setAlert({ show: true, type: "error", message: "Scraping and analysis failed: " + response.data.message });
         setIsModalOpen(false);
       }
     } catch (error) {
-      alert(error.message);
+      setAlert({ show: true, type: "error", message: error.message });
       setIsModalOpen(false);
     }
   }
 
   const handleScrape = () => {
     if (!url) {
-      alert("Please enter a valid URL");
+      setAlert({ show: true, type: "warning", message: "Please enter a valid URL" });
       return;
     }
     scrapeAndAnalayze(url);
-    console.log(url);
+  };
+
+  const handleCloseSnackbar = () => {
+    setAlert(prev => ({ ...prev, show: false }));
   };
 
   return (
@@ -65,6 +76,21 @@ const Home = () => {
           <LoadingModal isOpen={isModalOpen} setIsOpen={setIsModalOpen}/>
         </div>
       </div>
+      <Snackbar
+        open={alert.show}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={alert.type}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
