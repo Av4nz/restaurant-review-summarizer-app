@@ -1,10 +1,7 @@
 import React from "react";
 import DiagramComponent from "./DiagramComponent";
 
-const labels = ["Positive", "Negative", "Neutral"];
-const colors = ["text-green-700", "text-red-700", "text-gray-700"];
-
-const DiagramSection = ({ diagrams = [] }) => {
+const DiagramSection = ({ diagrams = [], labels, colors }) => {
   return (
     <div className="bg-slate-50 py-8">
       <div className="mx-auto container p-4 space-y-8">

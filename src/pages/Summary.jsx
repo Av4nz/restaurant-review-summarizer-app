@@ -11,7 +11,7 @@ import api from "../api.js";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
-import Snackbar from '@mui/material/Snackbar';
+import Snackbar from "@mui/material/Snackbar";
 
 const Summary = () => {
   const navigate = useNavigate();
@@ -37,7 +37,9 @@ const Summary = () => {
     positiveDiagram: [],
     neutralDiagram: [],
     negativeDiagram: [],
-    textSummary: "",
+    positiveSummary: "",
+    negativeSummary: "",
+    neutralSummary: "",
   });
 
   const wordcloudRef = useRef();
@@ -82,7 +84,9 @@ const Summary = () => {
         positiveDiagram,
         negativeDiagram,
         neutralDiagram,
-        textSummary: summary[0] || "",
+        positiveSummary: summary?.positive || "",
+        negativeSummary: summary?.negative || "",
+        neutralSummary: summary?.neutral || "",
       });
       setShowSectionItems(true);
       setAlert({
@@ -98,6 +102,34 @@ const Summary = () => {
       });
     }
   };
+
+  const wordclouds = [];
+  const diagrams = [];
+  const summaries = [];
+  const sentimentLabels = [];
+  const sentimentColors = [];
+
+  if (data.positiveWordcloud && data.positiveWordcloud.length > 0) {
+    wordclouds.push(data.positiveWordcloud);
+    diagrams.push(data.positiveDiagram);
+    summaries.push(data.positiveSummary);
+    sentimentLabels.push("Positive");
+    sentimentColors.push("text-green-700");
+  }
+  if (data.negativeWordcloud && data.negativeWordcloud.length > 0) {
+    wordclouds.push(data.negativeWordcloud);
+    diagrams.push(data.negativeDiagram);
+    summaries.push(data.negativeSummary);
+    sentimentLabels.push("Negative");
+    sentimentColors.push("text-red-700");
+  }
+  if (data.neutralWordcloud && data.neutralWordcloud.length > 0) {
+    wordclouds.push(data.neutralWordcloud);
+    diagrams.push(data.neutralDiagram);
+    summaries.push(data.neutralSummary);
+    sentimentLabels.push("Neutral");
+    sentimentColors.push("text-gray-700");
+  }
 
   const handleApplySummarize = () => {
     setShowSections(true);
@@ -154,13 +186,11 @@ const Summary = () => {
                   </Box>
                 </div>
               )}
-              {showSectionItems && (
+              {showSectionItems && wordclouds.length > 0 && (
                 <WordcloudSection
-                  wordclouds={[
-                    data.positiveWordcloud,
-                    data.negativeWordcloud,
-                    data.neutralWordcloud,
-                  ]}
+                  wordclouds={wordclouds}
+                  labels={sentimentLabels}
+                  colors={sentimentColors}
                 />
               )}
             </div>
@@ -175,13 +205,11 @@ const Summary = () => {
                   </Box>
                 </div>
               )}
-              {showSectionItems && (
+              {showSectionItems && diagrams.length > 0 && (
                 <DiagramSection
-                  diagrams={[
-                    data.positiveDiagram,
-                    data.negativeDiagram,
-                    data.neutralDiagram,
-                  ]}
+                  diagrams={diagrams}
+                  labels={sentimentLabels}
+                  colors={sentimentColors}
                 />
               )}
             </div>
@@ -196,8 +224,12 @@ const Summary = () => {
                   </Box>
                 </div>
               )}
-              {showSectionItems && (
-                <TextSummarySection text={data.textSummary} />
+              {showSectionItems && summaries.length > 0 && (
+                <TextSummarySection
+                  summaries={summaries}
+                  labels={sentimentLabels}
+                  colors={sentimentColors}
+                />
               )}
             </div>
           </div>

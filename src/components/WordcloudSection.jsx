@@ -2,11 +2,8 @@ import React from "react";
 import Wordcloud from "./Wordcloud";
 import useContainerSize from "./useContainerSize";
 
-const WordcloudSection = ({ wordclouds }) => {
+const WordcloudSection = ({ wordclouds, labels, colors }) => {
   const [containerRef, size] = useContainerSize();
-
-  const labels = ["Positive", "Negative", "Neutral"];
-  const colors = ["text-green-700", "text-red-700", "text-gray-700"];
 
   return (
     <div className="bg-slate-50 py-8">
