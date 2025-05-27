@@ -6,14 +6,17 @@ import DiagramSection from "../components/DiagramSection";
 import TextSummarySection from "../components/TextSummarySection";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
-import { use } from "react";
 import api from "../api.js";
 
-
 const Summary = () => {
+  const [showSections, setShowSections] = useState(false);
   const [data, setData] = useState({
-    wordcloud: [],
-    diagram: [],
+    positiveWordcloud: [],
+    neutralWordcloud: [],
+    negativeWordcloud: [],
+    positiveDiagram: [],
+    neutralDiagram: [],
+    negativeDiagram: [],
     textSummary: "",
   });
 
@@ -24,23 +27,44 @@ const Summary = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get("/review-summary");
-        const { summary, keywords } = response.data;
+        const response = await api.get("/summary-results");
+        const { summary, positive, negative, neutral } = response.data.summary_results;
 
-        const wordcloud = keywords.map((item) => ({
-          text: item.keyword,
-          value: item.count,
-        }));
-        const diagram = keywords.map((item) => ({
-          keyword: item.keyword,
-          count: item.count,
-        }));
+        const positiveWordcloud = (positive?.keywords || []).map(item => ({
+        text: item.keyword,
+        value: item.count,
+      }));
+      const negativeWordcloud = (negative?.keywords || []).map(item => ({
+        text: item.keyword,
+        value: item.count,
+      }));
+      const neutralWordcloud = (neutral?.keywords || []).map(item => ({
+        text: item.keyword,
+        value: item.count,
+      }));
+      const positiveDiagram = (positive?.keywords || []).map(item => ({
+        keyword: item.keyword,
+        count: item.count,
+      }));
+      const negativeDiagram = (negative?.keywords || []).map(item => ({
+        keyword: item.keyword,
+        count: item.count,
+      }));
+      const neutralDiagram = (neutral?.keywords || []).map(item => ({
+        keyword: item.keyword,
+        count: item.count,
+      }));
 
         setData({
-          wordcloud,
-          diagram,
-          textSummary: summary,
-        })
+          positiveWordcloud,
+          negativeWordcloud,
+          neutralWordcloud,
+          positiveDiagram,
+          negativeDiagram,
+          neutralDiagram,
+          textSummary: summary[0] || "",
+        });
+        setShowSections(true);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -80,20 +104,24 @@ const Summary = () => {
   return (
     <div>
       <FilterSection />
-      <div>
-        <div ref={wordcloudRef}>
-          <WordcloudSection words = {data.wordcloud}/>
-        </div>
-        <div ref={diagramRef}>
-          <DiagramSection data = {data.diagram}/>
-        </div>
-        <div ref={textSummaryRef}>
-          <TextSummarySection text = {data.textSummary}/>
-        </div>
-      </div>
-      <div className="flex items-center justify-center bg-slate-50 py-8">
-        <Button onClick={handleDownloadPDF}>Download as PDF</Button>
-      </div>
+      {showSections && (
+        <>
+          <div>
+            <div ref={wordcloudRef}>
+              <WordcloudSection wordclouds={[data.positiveWordcloud, data.negativeWordcloud, data.neutralWordcloud]} />
+            </div>
+            <div ref={diagramRef}>
+              <DiagramSection diagrams={[data.positiveDiagram, data.negativeDiagram, data.neutralDiagram]} />
+            </div>
+            <div ref={textSummaryRef}>
+              <TextSummarySection text={data.textSummary} />
+            </div>
+          </div>
+          <div className="flex items-center justify-center bg-slate-50 py-8">
+            <Button onClick={handleDownloadPDF}>Download as PDF</Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

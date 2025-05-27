@@ -2,22 +2,39 @@ import React, { useState } from "react";
 import Button from "../components/Button";
 import LoadingModal from "../components/LoadingModal";
 import { useNavigate } from "react-router-dom";
+import api from "../api.js";
 
 const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isScrapingComplete, setIsScrapingComplete] = useState(false);
+  const [url, setUrl] = useState("")
   const navigate = useNavigate();
 
-  const handleScrape = () => {
+  async function scrapeAndAnalayze(url) {
     setIsModalOpen(true);
-    setIsScrapingComplete(false);
-  };
-
-  const handleScrapingComplete = () => {
-    setIsScrapingComplete(true);
-    setIsModalOpen(false);
-    navigate("/summary");
+    try {
+      const response = await api.post("/scrape", { url });
+      if (response.data.status === "success") {
+        alert("Scraping and Analysis successful")
+        setIsModalOpen(false);
+        navigate("/summary");
+      } else {
+        alert("Scraping and analysis failed: " + response.data.message);
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      alert(error.message);
+      setIsModalOpen(false);
+    }
   }
+
+  const handleScrape = () => {
+    if (!url) {
+      alert("Please enter a valid URL");
+      return;
+    }
+    scrapeAndAnalayze(url);
+    console.log(url);
+  };
 
   return (
     <div className="flex items-center justify-center h-screen bg-slate-50 flex-col">
@@ -39,12 +56,13 @@ const Home = () => {
             className="bg-white border border-black rounded-full h-14 p-4 w-full md:w-[75%]"
             type="text"
             placeholder="Input GMaps Reviews link here"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
           />
         </div>
         <div className="flex items-center justify-center">
           <Button onClick={handleScrape}>Scrape</Button>
-          <LoadingModal isOpen={isModalOpen} setIsOpen={setIsModalOpen}
-          onScrapingComplete={handleScrapingComplete}/>
+          <LoadingModal isOpen={isModalOpen} setIsOpen={setIsModalOpen}/>
         </div>
       </div>
     </div>
